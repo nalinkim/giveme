@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>포트홀 알리미</title>
+  <link rel="stylesheet" href="style.css?v=6">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 카카오 지도 API -->
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=19fb069f2fa83f8e315bf7a17e2e5102&libraries=services&autoload=false"></script>
+</head>
+<body>
+
+  <!-- ===================== 1. 지도 (첫 화면) ===================== -->
+  <section id="map-view" class="view active">
+    <div id="map"></div>
+    <div id="count-box">
+      오늘 발견된 포트홀 수: <span id="today-count">0</span>개
+    </div>
+  </section>
+  
+  <!-- ===================== 2. 게시판 목록 ===================== -->
+  <section id="board-view" class="view page">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;">
+      <h2 style="margin: 0; font-size: 18px; text-align: left;">포트홀 배상청구 후기 커뮤니티</h2>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button onclick="openSearchView()" style="background: none; border: none; cursor: pointer; padding: 0; display: flex;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        <button class="btn btn-sm" onclick="go('write')">✏️ 글쓰기</button>
+      </div>
+    </div>
+
+    <div id="search-indicator" style="display: none; margin-bottom: 10px; font-size: 13px; color: #007BA7; text-align: right; padding: 0 5px;">
+      '<span id="current-keyword"></span>' 검색 결과 
+      <button onclick="clearSearch()" style="background: none; border: none; color: #888; cursor: pointer; font-size: 12px; text-decoration: underline; margin-left: 5px;">초기화</button>
+    </div>
+
+    <div class="card">
+      <div id="review-list">불러오는 중...</div>
+    </div>
+  </section>
+
+  <!-- ===================== 2-1. 검색 화면 (새로 추가됨) ===================== -->
+  <section id="search-view" class="view page" style="background: white; min-height: 100vh; padding-top: 15px;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 0 5px;">
+      <button onclick="go('board')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </button>
+      <div style="flex: 1; position: relative; display: flex; align-items: center;">
+        <span style="position: absolute; left: 12px; display: flex;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
+        <input type="text" id="real-search-input" placeholder="검색" style="width: 100%; padding: 10px 10px 10px 38px; border: none; border-radius: 8px; background-color: #f1f3f5; font-size: 15px; margin: 0; outline: none;" onkeyup="if(event.key === 'Enter') executeSearch()">
+      </div>
+    </div>
+
+    <div style="padding: 0 10px;">
+      <div style="font-size: 14px; font-weight: bold; margin-bottom: 15px; color: #333;">최근 검색어</div>
+      <div id="recent-search-list"></div>
+    </div>
+  </section>
+
+  <!-- ===================== 3. 게시글 상세 ===================== -->
+  <section id="detail-view" class="view page">
+    <div class="card">
+      <div class="detail-top">
+        <button class="btn btn-gray btn-sm" onclick="go('board')">← 목록으로</button>
+        <div id="author-actions" class="btn-group"></div>
+      </div>
+      <div id="detail-content"></div>
+
+      <hr class="divider">
+
+      <h4>댓글</h4>
+      <div id="comment-list">댓글을 불러오는 중...</div>
+
+      <textarea id="comment-content" rows="2" placeholder="댓글을 남겨보세요"></textarea>
+      <button class="btn btn-block" onclick="writeComment()">댓글 등록</button>
+    </div>
+  </section>
+
+  <!-- ===================== 4. 글쓰기 / 수정 ===================== -->
+  <section id="write-view" class="view page">
+    <div class="card">
+      <h3 id="form-title">📝 새로운 후기 작성하기</h3>
+      <input type="hidden" id="edit-id" value="">
+      <input type="text" id="title" placeholder="글 제목">
+      <input type="text" id="location" placeholder="포트홀 발생 위치 (예: 서울시 강남구)">
+      <textarea id="content" rows="5" placeholder="청구 과정 및 결과 후기를 적어주세요"></textarea>
+
+      <label for="imageFile" class="label">증거 사진 첨부:</label>
+      <input type="file" id="imageFile" accept="image/*">
+
+      <div class="btn-group" style="margin-top: 15px;">
+        <button class="btn" style="flex: 1;" onclick="saveReview()">등록하기</button>
+        <button class="btn btn-gray" style="flex: 1;" onclick="go('board')">취소</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 5. 긴급신고 ===================== -->
+  <section id="report-view" class="view page center">
+    <h2>🚨 GPS 기반 도로 관할 기관 긴급 신고</h2>
+    <p class="sub">현재 위치의 GPS를 따와 도로 등급을 판별하고 올바른 신고처로 연결합니다.</p>
+    <button id="reportBtn" class="btn btn-block btn-lg" onclick="startReport()">📍 내 위치 기반 관할 기관 찾기 & 신고</button>
+    <div id="result" class="card"></div>
+  </section>
+
+  <!-- ===================== 6. 내정보 ===================== -->
+  <section id="mypage-view" class="view page">
+    <h2>👤 마이페이지</h2>
+    <div class="card center">
+      <div class="profile-wrap">
+        <img id="profile-image" alt="프로필 사진" class="profile-img">
+        <label for="profileImageInput" class="camera-btn" title="프로필 사진 변경">📷</label>
+        <input type="file" id="profileImageInput" accept="image/*" style="display: none;" onchange="uploadProfileImage(this)">
+      </div>
+      <h3 id="profile-name" class="profile-name">로딩 중...</h3>
+      <p id="profile-email" class="profile-email"></p>
+    </div>
+    <div id="login-section" class="card center" style="display: none;">
+      <p class="sub">카카오 계정으로 간편하게 시작하세요!</p>
+      <button class="btn btn-kakao btn-block" onclick="loginWithKakao()">💬 카카오 로그인</button>
+    </div>
+    <div id="settings-section" class="card" style="display: none;">
+      <h4 style="margin-top: 0;">닉네임 설정</h4>
+      <div class="row" style="margin-bottom: 0;">
+        <input type="text" id="nickname-input" placeholder="새로운 닉네임 입력">
+        <button class="btn" onclick="updateNickname()">저장</button>
+      </div>
+      <hr class="divider">
+      <button class="btn btn-gray btn-block" onclick="logout()">로그아웃</button>
+    </div>
+  </section>
+
+  <!-- ===================== 공통: 알림/확인 팝업 ===================== -->
+  <div id="custom-modal">
+    <div class="modal-content">
+      <p id="modal-message"></p>
+      <div id="modal-buttons" class="btn-group"></div>
+    </div>
+  </div>
+
+  <!-- ===================== 공통: 하단 네비게이션 ===================== -->
+  <nav class="bottom-nav-pill" id="bottom-nav">
+    <button class="nav-item" data-view="map" onclick="go('map')">🗺️<span class="nav-label">지도</span></button>
+    <button class="nav-item" data-view="board" onclick="go('board')">💬<span class="nav-label">게시판</span></button>
+    <button class="nav-item" data-view="report" onclick="go('report')">🚨<span class="nav-label">긴급신고</span></button>
+    <button class="nav-item" data-view="mypage" onclick="go('mypage')">👤<span class="nav-label">내정보</span></button>
+  </nav>
+
+  <script src="app.js?v=6"></script>
+</body>
+</html>

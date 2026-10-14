@@ -1,0 +1,264 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  -webkit-text-size-adjust: 100%;
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background-color: #f7f9fa;
+  color: #333;
+}
+
+/* ===================== 화면(뷰) 전환 ===================== */
+.view { display: none; }
+.view.active { display: block; }
+
+/* 지도 이외의 일반 페이지 공통 레이아웃 */
+.page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 16px 120px; /* 하단 네비게이션 바 가림 방지 */
+}
+.center { text-align: center; }
+
+h2 { text-align: center; color: #333; margin-bottom: 20px; }
+.sub { font-size: 13px; color: #666; }
+
+/* ===================== 지도 화면 ===================== */
+#map-view { position: fixed; inset: 0; }
+#map { width: 100%; height: 100%; }
+
+/* 💡 오늘 발견된 포트홀 수 - 화면 상단 중앙 */
+#count-box {
+  position: fixed;
+  top: 20px;
+  top: calc(20px + env(safe-area-inset-top)); /* 아이폰 노치 회피 */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  z-index: 999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+#today-count { color: #ff4757; }
+
+/* ===================== 공통 카드 / 입력 ===================== */
+.card {
+  background: white;
+  padding: 18px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+}
+input[type="file"] { margin: 6px 0 4px; }
+.label { font-size: 14px; color: #555; }
+
+.row { display: flex; gap: 6px; margin-bottom: 15px; }
+.row input { margin-bottom: 0; }
+.btn-group { display: flex; gap: 8px; }
+.divider { border: 0; border-top: 1px solid #eee; margin: 20px 0 15px; }
+
+/* ===================== 버튼 ===================== */
+.btn {
+  background: #007BA7;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { opacity: 0.9; }
+.btn-block { width: 100%; }
+.btn-lg { padding: 14px; font-size: 16px; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-gray { background: #888; }
+.btn-orange { background: #f0ad4e; }
+.btn-red { background: #d9534f; }
+.btn-kakao { background: #FEE500; color: #3C1E1E; }
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ===================== 게시판 ===================== */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #555;
+}
+
+.review-item {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.review-item:hover { background-color: #f1f7fa; border-radius: 4px; }
+.review-date { color: #888; font-size: 13px; white-space: nowrap; }
+
+.detail-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.review-img { max-width: 100%; height: auto; border-radius: 6px; margin-top: 10px; }
+
+.comment-box {
+  background: #f1f7fa;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.reply-box {
+  background: #e9f3f8;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-top: 6px;
+  margin-left: 20px;
+  font-size: 13px;
+  border-left: 3px solid #007BA7;
+}
+.comment-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.comment-meta small { color: #888; font-size: 11px; }
+
+/* ===================== 긴급신고 ===================== */
+#result { display: none; margin-top: 20px; text-align: left; }
+
+/* ===================== 마이페이지 ===================== */
+.profile-wrap { position: relative; display: inline-block; }
+.profile-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 3px solid #007BA7;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: #eee;
+}
+.camera-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #007BA7;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.camera-btn:active { transform: scale(0.9); }
+.profile-name { margin: 15px 0 5px; }
+.profile-email { margin: 0; color: #888; font-size: 13px; }
+
+/* ===================== 모달 ===================== */
+#custom-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 100000;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  max-width: 90%;
+  text-align: center;
+}
+#modal-message { margin: 0 0 20px; font-size: 15px; white-space: pre-line; }
+#modal-buttons .btn { flex: 1; }
+
+/* ===================== 하단 알약 네비게이션 ===================== */
+.bottom-nav-pill {
+  position: fixed;
+  left: 50%;
+  bottom: 25px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  margin-left: -46vw;
+  width: 92vw;
+  height: 65px;
+  z-index: 99999;
+  border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.97);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0 6px; /* 💡 양끝 여백 추가 */
+}
+@media (min-width: 457px) {
+  .bottom-nav-pill { width: 420px; margin-left: -210px; }
+}
+.nav-item {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 14px;      /* 💡 좌우 여백을 주어 버튼 길이를 적당히 줄임 */
+  border-radius: 30px;    /* 💡 완전 둥근 모서리 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, background-color 0.2s;
+  flex: 0 1 auto;         /* 💡 꽉 차게 늘어나지 않도록 설정 */
+  height: 46px;
+}
+.nav-item:active { transform: scale(0.9); }
+.nav-item.active { background-color: #e5e7eb; }
+.nav-label { font-size: 11px; margin-top: 4px; color: #666; font-weight: bold; }
+.nav-item.active .nav-label { color: #333; }
+
+/* 긴 제목·닉네임·이메일이 화면 밖으로 밀어내지 않도록 */
+.page, .card, .review-item span, #user-status, .profile-email, #detail-content {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+.page { width: 100%; }
